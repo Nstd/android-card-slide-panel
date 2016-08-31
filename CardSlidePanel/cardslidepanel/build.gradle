@@ -1,0 +1,128 @@
+apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+//debug  version
+//version = "1.1.alpha"
+//release version
+version = "1.1.1"
+android {
+    compileSdkVersion 22
+    buildToolsVersion '23.0.3'
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 19
+        versionCode 2
+        versionName "1.1.1"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+def siteUrl = "https://github.com/Nstd/android-card-slide-panel"
+def gitUrl = "https://github.com/Nstd/android-card-slide-panel.git"
+
+group = "com.stone"
+
+install {
+    repositories.mavenInstaller {
+        // This generaes POM.xml with proper paramters
+        pom {
+            project {
+                packaging 'aar'
+
+                //添加项目描述��
+                name 'Card Slide Panel for Android'
+                url siteUrl
+
+                //设置开源证书信息
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                //添加开发者信息
+                developers {
+                    developer {
+                        id 'nstd'
+                        name 'maoting'
+                        email 'qmaoting@hotmail.com'
+                    }
+                }
+
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:support-v4:19.0.0'
+    compile 'com.facebook.rebound:rebound:0.3.8'
+}
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+//task javadoc(type: Javadoc) {
+//    source = android.sourceSets.main.java.srcDirs
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+//}
+
+//task javadocJar(type: Jar, dependsOn: Javadoc) {
+//    classifier = 'javadoc'
+//    from Javadoc.destinationDir
+//}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+tasks.withType(Javadoc) {
+    options.encoding = "UTF-8"
+}
+
+artifacts {
+//    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+//配置上传Bintray相关信息
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+
+    pkg {
+        repo = "maven"//上传的中央仓库名称�
+        name = "CardSlidePanel"//上传的项目的名字�
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true  //是否发布
+    }
+}
+
+//gradlew javadocJar
+//gradlew sourcesJar
+//gradlew install
+//gradlew bintrayUpload

@@ -1,3 +1,6 @@
+CardSlidePanel
+====================
+
 ### 序言
 故事的起点是这样的-<br>
 * 有一个技术讨论的QQ群，里面活跃着一群技术牛人。他们技艺精湛，飞天遁地，无所不能。他们知道你所不知的技术，玩过你没有玩过的App。<br>
@@ -31,4 +34,46 @@
 细看代码即可知。
 ####Demo安装包
 [apk download](CardSlidePanel.apk) (就在thisProj工程之中)
+
+
+### 引用
+### Gradle
+``` gradle
+compile 'com.stone:cardslidepanel:1.1.1@aar'
+```
+
+### 更新说明
+#### v1.1.1
+	将控件独立成一个library
+	上传jcenter
+
+### 用法
+#### XML
+``` xml
+<com.stone.card.CardSlidePanel
+	android:id="@+id/image_slide_panel"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	card:bottomMarginTop="38dp"
+	card:itemMarginTop="10dp"
+	card:yOffsetStep="26dp"/>
+```
+
+#### JAVA
+``` java
+	// 卡片切换的回调接口
+	slidePanel.setCardSwitchListener(cardSwitchListener);
+	// 卡片Item的Adapter，需要重写BaseAdapter
+	slidePanel.setAdapter(adapter);
+	
+	// 手动触发往左消失的事件
+	slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_LEFT);
+	// 手动触发往右消失的事件
+	slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_RIGHT);
+	
+	// 具体代码参见Demo
+```
+
+#### 注意
+由于将CardItemView从原来的逻辑中剥离到adapter里，如果要配合ViewPager使用，为了兼容ViewPage，滑动时的逻辑需要自己重写
 
