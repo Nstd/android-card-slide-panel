@@ -1,4 +1,4 @@
-package com.stone.card;
+package com.stone.card.demo;
 
 /**
  * 卡片数据装载对象
