@@ -22,34 +22,37 @@
         android:layout_below="@id/title"
         card:bottomMarginTop="38dp"
         card:itemMarginTop="10dp"
-        card:yOffsetStep="26dp"/>
+        card:yOffsetStep="26dp">
 
+        <LinearLayout
+            android:id="@id/cardfooter"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:gravity="center"
+            android:orientation="horizontal">
 
-    <LinearLayout
-        android:id="@+id/card_bottom_layout"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:gravity="center"
-        android:orientation="horizontal">
+            <Button
+                android:id="@+id/card_left_btn"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:background="@drawable/ignore_button" />
 
-        <Button
-            android:id="@+id/card_left_btn"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:background="@drawable/ignore_button" />
+            <Button
+                android:id="@+id/card_center_btn"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/home_button" />
 
-        <Button
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/home_button" />
+            <Button
+                android:id="@+id/card_right_btn"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_marginLeft="10dp"
+                android:background="@drawable/like_button" />
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/card_right_btn"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_marginLeft="10dp"
-            android:background="@drawable/like_button" />
-    </LinearLayout>
+    </com.stone.card.CardSlidePanel>
+
 </RelativeLayout>

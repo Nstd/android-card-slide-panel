@@ -29,6 +29,7 @@ public class CardFragment extends Fragment {
     private View leftBtn;
     private View rightBtn;
     private CardSlidePanel slidePanel;
+    private ItemAdapter adapter;
 
     private String imagePaths[] = {"assets://wall01.jpg",
             "assets://wall02.jpg", "assets://wall03.jpg",
@@ -65,6 +66,9 @@ public class CardFragment extends Fragment {
                 slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_LEFT);
             } else if(v.getId() == R.id.card_right_btn) {
                 slidePanel.vanishOnBtnClick(CardSlidePanel.VANISH_TYPE_RIGHT);
+            } else if(v.getId() == R.id.card_center_btn) {
+                genNewData();
+                adapter.notifyDataSetChanged();
             }
         }
     };
@@ -77,6 +81,7 @@ public class CardFragment extends Fragment {
         rightBtn = rootView.findViewById(R.id.card_right_btn);
         leftBtn.setOnClickListener(btnClickListener);
         rightBtn.setOnClickListener(btnClickListener);
+        rootView.findViewById(R.id.card_center_btn).setOnClickListener(btnClickListener);
 
         cardSwitchListener = new CardSlidePanel.CardSwitchListener() {
 
@@ -97,7 +102,7 @@ public class CardFragment extends Fragment {
         };
         prepareDataList();
         slidePanel.setCardSwitchListener(cardSwitchListener);
-        ItemAdapter adapter = new ItemAdapter();
+        adapter = new ItemAdapter();
         slidePanel.setAdapter(adapter);
 //        slidePanel.fillData(dataList);
     }
@@ -153,6 +158,20 @@ public class CardFragment extends Fragment {
             public TextView userNameTv;
             public TextView imageNumTv;
             public TextView likeNumTv;
+        }
+    }
+
+    private void genNewData() {
+        dataList.clear();
+        int size = (int)(Math.random() * 10);
+        Log.e("CardFragment", "new size=" + size);
+        for(int i = 0; i < size; i++) {
+            CardDataItem dataItem = new CardDataItem();
+            dataItem.userName = names[i] + "(new)";
+            dataItem.imagePath = imagePaths[i];
+            dataItem.likeNum = (int) (Math.random() * 10);
+            dataItem.imageNum = (int) (Math.random() * 6);
+            dataList.add(dataItem);
         }
     }
 

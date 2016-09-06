@@ -3,6 +3,7 @@ package com.stone.card;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.database.DataSetObserver;
 import android.graphics.Point;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.view.ViewCompat;
@@ -14,7 +15,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
+import android.widget.Adapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,7 @@ public class CardSlidePanel extends ViewGroup {
     private List<CardItemHelper> releasedHelperList = new ArrayList<>(); // 手指松开后存放的帮助类的列表
 
     /* 拖拽工具类 */
-    private final ViewDragHelper mDragHelper; // 这个跟原生的ViewDragHelper差不多，我仅仅只是修改了Interpolator
+    private ViewDragHelper mDragHelper; // 这个跟原生的ViewDragHelper差不多，我仅仅只是修改了Interpolator
     private int initCenterViewX = 0, initCenterViewY = 0; // 最初时，中间View的x位置,y位置
     private int allWidth = 0; // 面板的宽度
     private int allHeight = 0; // 面板的高度
@@ -47,6 +48,10 @@ public class CardSlidePanel extends ViewGroup {
     // 则下一层view完成向上一层view的过渡
 //    private View bottomLayout; // 卡片下边的三个按钮布局
 //    private View leftBtn, rightBtn;
+
+    private View headerLayout; // header 布局
+    private View footerLayout; // footer 布局
+
 
     private int itemMarginTop = 10; // 卡片距离顶部的偏移量
     private int bottomMarginTop = 40; // 底部按钮与卡片的margin值
@@ -63,7 +68,8 @@ public class CardSlidePanel extends ViewGroup {
     private Object obj1 = new Object();
     private boolean isInOrder = false; //是否处于排序中
 
-    private BaseAdapter adapter;
+    private Adapter mAdapter;
+    private AdapterDataSetObserver mDataSetObserver;
     private CardSwitchListener cardSwitchListener; // 回调接口
 //    private List<CardDataItem> dataList; // 存储的数据链表
     private int isShowing = 0; // 当前正在显示的小项
@@ -110,9 +116,43 @@ public class CardSlidePanel extends ViewGroup {
         moveDetector.setIsLongpressEnabled(false);
     }
 
-    public void setAdapter(BaseAdapter adapter) {
-        this.adapter = adapter;
-        if(adapter != null) {
+    private class AdapterDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            updateData();
+        }
+
+        @Override
+        public void onInvalidated() {
+            updateData();
+        }
+    }
+
+    private void updateData() {
+        if(mAdapter != null) {
+            initByAdapter();
+        }
+    }
+
+    public Adapter getAdapter() {
+        return mAdapter;
+    }
+
+    public void setAdapter(Adapter adapter) {
+        if(mAdapter != null && mDataSetObserver != null) {
+            mAdapter.unregisterDataSetObserver(mDataSetObserver);
+            mDataSetObserver = null;
+        }
+
+        mAdapter = adapter;
+        isShowing = 0;
+
+        if(mAdapter != null && mDataSetObserver == null) {
+            mDataSetObserver = new AdapterDataSetObserver();
+            mAdapter.registerDataSetObserver(mDataSetObserver);
+        }
+
+        if(viewList.size() == 0) {
             initByAdapter();
             requestLayout();
         }
@@ -121,35 +161,42 @@ public class CardSlidePanel extends ViewGroup {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
+        headerLayout = findViewById(R.id.cardheader);
+        footerLayout = findViewById(R.id.cardfooter);
+
+    }
+
+    private void clearView(List<View> views) {
+        if(views != null && views.size() > 0) {
+            for(View view : views) {
+                removeView(view);
+            }
+        }
     }
 
     private void initByAdapter() {
+        clearView(viewList);
+        clearView(releasedViewList);
         viewList.clear();
-        int size = adapter.getCount();
+        helperList.clear();
+        releasedViewList.clear();
+        releasedHelperList.clear();
+        isShowing = 0;
+
+        int size = mAdapter.getCount();
         if(size > 0) {
+            //根据数据大小，初始化card view的个数，最大为mMaxVisibleItemSize + 1
             int maxSize = mMaxVisibleItemSize + 1;
             size = size > maxSize ? maxSize : size;
-            Log.e(TAG, "size=" + size + " maxSize=" + maxSize);
             for (int i = size - 1; i >= 0; i--) {
-                View viewItem = adapter.getView(i, null, this);
+                View viewItem = mAdapter.getView(i, null, this);
                 CardItemHelper helper = new CardItemHelper(viewItem);
                 helper.setParentView(this);
                 viewList.add(0, viewItem);
                 helperList.add(0, helper);
                 addView(viewItem);
                 viewItem.setVisibility(View.VISIBLE);
-            }
-
-            if(size < maxSize) {
-                for(int i = maxSize - size - 1; i >= 0; i--) {
-                    View viewItem = adapter.getView(0, null, this);
-                    CardItemHelper helper = new CardItemHelper(viewItem);
-                    helper.setParentView(this);
-                    viewList.add(viewItem);
-                    helperList.add(helper);
-                    addView(viewItem);
-                    viewItem.setVisibility(View.GONE);
-                }
             }
 
             if(viewList.size() == maxSize) {
@@ -160,6 +207,9 @@ public class CardSlidePanel extends ViewGroup {
             if (null != cardSwitchListener) {
                 cardSwitchListener.onShow(0);
             }
+
+            requestLayout();
+            orderViewStack();
         }
     }
 
@@ -189,8 +239,11 @@ public class CardSlidePanel extends ViewGroup {
         public boolean tryCaptureView(View child, int pointerId) {
             // 如果数据List为空，或者子View不可见，则不予处理
 
-            if (adapter != null && adapter.getCount() == 0
-                    || child.getVisibility() != View.VISIBLE || child.getScaleX() <= 1.0f - SCALE_STEP) {
+            if (child.getId() == R.id.cardheader
+                    || child.getId() == R.id.cardfooter
+                    || (mAdapter != null && mAdapter.getCount() == 0)
+                    || child.getVisibility() != View.VISIBLE
+                    || child.getScaleX() <= 1.0f - SCALE_STEP) {
                 // 一般来讲，如果拖动的是第三层、或者第四层的View，则直接禁止
                 // 此处用getScale的用法来巧妙回避
                 return false;
@@ -237,6 +290,7 @@ public class CardSlidePanel extends ViewGroup {
     public void onViewPosChanged(View changedView) {
         // 调用offsetLeftAndRight导致viewPosition改变，会调到此处，所以此处对index做保护处理
         int index = viewList.indexOf(changedView);
+        Log.e(TAG, "new onViewPosChanged, index=" + index  + " viewListSize=" + viewList.size());
         if (index + 2 > viewList.size()) {
             return;
         }
@@ -250,7 +304,7 @@ public class CardSlidePanel extends ViewGroup {
     private void orderViewStack() {
         isInOrder = true;
         synchronized (obj1) {
-            if (releasedViewList.size() == 0 || adapter == null) {
+            if (releasedViewList.size() == 0 || mAdapter == null) {
                 isInOrder = false;
                 return;
             }
@@ -284,8 +338,8 @@ public class CardSlidePanel extends ViewGroup {
 
             // 3. changedView填充新数据
             int newIndex = isShowing + 4;
-            if (newIndex < adapter.getCount()) {
-                adapter.getView(newIndex, changedView, this);
+            if (newIndex < mAdapter.getCount()) {
+                mAdapter.getView(newIndex, changedView, this);
             } else {
                 changedView.setVisibility(View.INVISIBLE);
             }
@@ -299,7 +353,7 @@ public class CardSlidePanel extends ViewGroup {
             releasedHelperList.remove(0);
 
             // 5. 更新showIndex、接口回调
-            if (isShowing + 1 < adapter.getCount()) {
+            if (isShowing + 1 < mAdapter.getCount()) {
                 isShowing++;
             }
             if (null != cardSwitchListener) {
@@ -336,10 +390,14 @@ public class CardSlidePanel extends ViewGroup {
         }
 
         ajustLinkageViewItem(changedView, rate1, 1);
-        ajustLinkageViewItem(changedView, rate2, 2);
-
-        View bottomCardView = viewList.get(viewList.size() - 1);
-        bottomCardView.setAlpha(rate2);
+        int size = viewList.size();
+        if(size > 2) {
+            ajustLinkageViewItem(changedView, rate2, 2);
+            if(size > 3) {
+                View bottomCardView = viewList.get(viewList.size() - 1);
+                bottomCardView.setAlpha(rate2);
+            }
+        }
     }
 
     // 由index对应view变成index-1对应的view
@@ -523,6 +581,7 @@ public class CardSlidePanel extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         measureChildren(widthMeasureSpec, heightMeasureSpec);
         int maxWidth = MeasureSpec.getSize(widthMeasureSpec);
         int maxHeight = MeasureSpec.getSize(heightMeasureSpec);
@@ -532,18 +591,39 @@ public class CardSlidePanel extends ViewGroup {
 
         allWidth = getMeasuredWidth();
         allHeight = getMeasuredHeight();
+
+        Log.e(TAG, "allWidth=" + allWidth + " allHeight=" + allHeight);
     }
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right,
                             int bottom) {
+//        Log.d(TAG, "layout: left=" + left + " top=" + top + " right=" + right + " bottom=" + bottom);
+        // 布局header view
+        int headerTotalHeight = 0;
+        if(null != headerLayout) {
+            int headerHeight = headerLayout.getMeasuredHeight();
+            ViewGroup.LayoutParams lp = headerLayout.getLayoutParams();
+
+            int headerMarginTop = 0;//lp.topMargin;
+            int headerMarginBottom = 0;//lp.bottomMargin;
+            headerLayout.layout(left, headerMarginTop, right, headerMarginTop + headerHeight);
+            headerTotalHeight = headerMarginTop + headerHeight + headerMarginBottom;
+        }
+
         // 布局卡片view
         int size = viewList.size();
+        Log.e(TAG, "childsize=" + size);
+        int childMaxHeight = 0;
         for (int i = 0; i < size; i++) {
             View viewItem = viewList.get(i);
             int childHeight = viewItem.getMeasuredHeight();
+            childMaxHeight = Math.max(childMaxHeight, childHeight + itemMarginTop);
             int viewLeft = (getWidth() - viewItem.getMeasuredWidth()) / 2;
-            viewItem.layout(viewLeft, itemMarginTop, viewLeft + viewItem.getMeasuredWidth(), itemMarginTop + childHeight);
+            viewItem.layout(viewLeft,
+                    headerTotalHeight + itemMarginTop,
+                    viewLeft + viewItem.getMeasuredWidth(),
+                    headerTotalHeight + itemMarginTop + childHeight);
             int offset = yOffsetStep * i;
             float scale = 1 - SCALE_STEP * i;
             if (i > 2) {
@@ -557,8 +637,15 @@ public class CardSlidePanel extends ViewGroup {
             viewItem.setScaleY(scale);
         }
 
+        // 布局footer view
+        if(null != footerLayout && size > 0) {
+            int layoutTop = viewList.get(0).getBottom() + bottomMarginTop;
+            footerLayout.layout(left, layoutTop, right, layoutTop
+                    + footerLayout.getMeasuredHeight());
+        }
+
         // 初始化一些中间参数
-        if(adapter != null && size > 0) {
+        if(mAdapter != null && size > 0) {
             initCenterViewX = viewList.get(0).getLeft();
             initCenterViewY = viewList.get(0).getTop();
             childWith = viewList.get(0).getMeasuredWidth();
