@@ -46,7 +46,12 @@ compile 'com.stone:cardslidepanel:1.1.1@aar'
 #### v1.1.1
 	将控件独立成一个library
 	上传jcenter
-
+#### v1.1.2
+	添加了Header和Footer的处理：
+		Header布局的id必须是cardheader
+		Footer布局的id必须是cardfooter
+	修复了adapter的notifyDataSetChanged()方法无效的问题
+	
 ### 用法
 #### XML
 ``` xml
@@ -56,7 +61,19 @@ compile 'com.stone:cardslidepanel:1.1.1@aar'
 	android:layout_height="match_parent"
 	card:bottomMarginTop="38dp"
 	card:itemMarginTop="10dp"
-	card:yOffsetStep="26dp"/>
+	card:yOffsetStep="26dp">
+	<LinearLayout
+		android:id="@id/cardfooter"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+			<Button
+				android:id="@+id/card_btn"
+				android:layout_width="70dp"
+				android:layout_height="70dp"
+				android:background="@drawable/home_button" />
+	</LinearLayout>
+</con.stone.card.CardSlidePanel>
 ```
 
 #### JAVA
