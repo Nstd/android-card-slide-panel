@@ -69,6 +69,7 @@ public class CardFragment extends Fragment {
             } else if(v.getId() == R.id.card_center_btn) {
                 genNewData();
                 adapter.notifyDataSetChanged();
+//                slidePanel.setyOffsetStep((int)(Math.random() * 100));
             }
         }
     };

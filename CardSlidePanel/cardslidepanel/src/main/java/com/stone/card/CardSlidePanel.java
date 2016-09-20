@@ -116,6 +116,18 @@ public class CardSlidePanel extends ViewGroup {
         moveDetector.setIsLongpressEnabled(false);
     }
 
+    public void setItemMarginTop(int marginTop) {
+        this.itemMarginTop = marginTop;
+    }
+
+    public void setBottomMarginTop(int bottomMarginTop) {
+        this.bottomMarginTop = bottomMarginTop;
+    }
+
+    public void setyOffsetStep(int yOffsetStep) {
+        this.yOffsetStep = yOffsetStep;
+    }
+
     private class AdapterDataSetObserver extends DataSetObserver {
         @Override
         public void onChanged() {
@@ -290,7 +302,7 @@ public class CardSlidePanel extends ViewGroup {
     public void onViewPosChanged(View changedView) {
         // 调用offsetLeftAndRight导致viewPosition改变，会调到此处，所以此处对index做保护处理
         int index = viewList.indexOf(changedView);
-        Log.e(TAG, "new onViewPosChanged, index=" + index  + " viewListSize=" + viewList.size());
+        Log.i(TAG, "new onViewPosChanged, index=" + index  + " viewListSize=" + viewList.size());
         if (index + 2 > viewList.size()) {
             return;
         }
@@ -592,7 +604,7 @@ public class CardSlidePanel extends ViewGroup {
         allWidth = getMeasuredWidth();
         allHeight = getMeasuredHeight();
 
-        Log.e(TAG, "allWidth=" + allWidth + " allHeight=" + allHeight);
+        Log.i(TAG, "allWidth=" + allWidth + " allHeight=" + allHeight);
     }
 
     @Override
@@ -613,7 +625,7 @@ public class CardSlidePanel extends ViewGroup {
 
         // 布局卡片view
         int size = viewList.size();
-        Log.e(TAG, "childsize=" + size);
+        Log.i(TAG, "childsize=" + size);
         int childMaxHeight = 0;
         for (int i = 0; i < size; i++) {
             View viewItem = viewList.get(i);
