@@ -39,7 +39,7 @@ CardSlidePanel
 ### 引用
 ### Gradle
 ``` gradle
-compile 'com.stone:cardslidepanel:1.1.1@aar'
+compile 'com.stone:cardslidepanel:1.1.3@aar'
 ```
 
 ### 更新说明
@@ -51,7 +51,8 @@ compile 'com.stone:cardslidepanel:1.1.1@aar'
 		Header布局的id必须是cardheader
 		Footer布局的id必须是cardfooter
 	修复了adapter的notifyDataSetChanged()方法无效的问题
-	
+#### v1.1.3
+	删除一些无用log
 ### 用法
 #### XML
 ``` xml
