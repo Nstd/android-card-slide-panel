@@ -39,19 +39,25 @@ CardSlidePanel
 ### 引用
 ### Gradle
 ``` gradle
-compile 'com.stone:cardslidepanel:1.1.1@aar'
+implementation 'com.stone:cardslidepanel:1.1.4-alpha@aar'
 ```
 
 ### 更新说明
-#### v1.1.1
-	将控件独立成一个library
-	上传jcenter
+#### v1.1.4-alpha
+	bugfix
+	升级gradle版本
+#### v1.1.3
+	去除了一些无用的Log
+	增加了三个方法，可以修改card的上边距、card和bottom的距离以及card之间的叠加偏移量
 #### v1.1.2
 	添加了Header和Footer的处理：
 		Header布局的id必须是cardheader
 		Footer布局的id必须是cardfooter
 	修复了adapter的notifyDataSetChanged()方法无效的问题
-	
+#### v1.1.1
+	将控件独立成一个library
+	上传jcenter
+
 ### 用法
 #### XML
 ``` xml

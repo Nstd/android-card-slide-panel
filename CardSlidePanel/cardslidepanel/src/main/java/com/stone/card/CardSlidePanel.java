@@ -303,11 +303,11 @@ public class CardSlidePanel extends ViewGroup {
         // 调用offsetLeftAndRight导致viewPosition改变，会调到此处，所以此处对index做保护处理
         int index = viewList.indexOf(changedView);
         Log.i(TAG, "new onViewPosChanged, index=" + index  + " viewListSize=" + viewList.size());
-        if (index + 2 > viewList.size()) {
+        if (index == -1 || index + 2 >= viewList.size()) {
             return;
         }
 
-        processLinkageView(changedView);
+        processLinkageView(changedView, index);
     }
 
     /**
@@ -381,7 +381,7 @@ public class CardSlidePanel extends ViewGroup {
      *
      * @param changedView 顶层的卡片view
      */
-    private void processLinkageView(View changedView) {
+    private void processLinkageView(View changedView, int changedIndex) {
         int changeViewLeft = changedView.getLeft();
         int changeViewTop = changedView.getTop();
         int distance = Math.abs(changeViewTop - initCenterViewY)
@@ -401,14 +401,16 @@ public class CardSlidePanel extends ViewGroup {
             rate2 = 1;
         }
 
-        ajustLinkageViewItem(changedView, rate1, 1);
         int size = viewList.size();
-        if(size > 2) {
+        if(changedIndex + 1 < size) {
+            ajustLinkageViewItem(changedView, rate1, 1);
+        }
+        if(changedIndex + 2 < size) {
             ajustLinkageViewItem(changedView, rate2, 2);
-            if(size > 3) {
-                View bottomCardView = viewList.get(viewList.size() - 1);
-                bottomCardView.setAlpha(rate2);
-            }
+        }
+        if(size > 3) {
+            View bottomCardView = viewList.get(viewList.size() - 1);
+            bottomCardView.setAlpha(rate2);
         }
     }
 
